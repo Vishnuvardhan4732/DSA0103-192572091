@@ -1,1 +1,735 @@
+========================================================================================
+TASK 1(A) — Predict the Output
+FILE NAME: Task01/Q1_predict_output.cpp
+========================================================================================
 
+#include <iostream>
+
+void change(int a, int& b, int* c) {
+    a += 10;
+    b += 10;
+    *c += 10;
+}
+
+int& bigger(int& p, int& q) {
+    return p > q ? p : q;
+}
+
+void show(int x, int y = 5, int z = 10) {
+    std::cout << x + y + z << ' ';
+}
+
+int main() {
+    int a = 1, b = 2, c = 3;
+    change(a, b, &c);
+    std::cout << a << ' ' << b << ' ' << c << '\n';
+
+    bigger(a, c) = 100;
+    std::cout << a << ' ' << c << '\n';
+
+    show(1);
+    show(1, 2);
+    show(1, 2, 3);
+    std::cout << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 1(B) — Complete the Hostel Fee Concession TODO
+FILE NAME: Task01/Q1_complete_TODO.cpp
+========================================================================================
+
+#include <iostream>
+
+void applyByValue(long long fee, int percent) {
+    fee -= fee * percent / 100; // changes only the local copy
+}
+
+void applyConcession(long long& fee, int percent) {
+    fee -= fee * percent / 100; // TODO 1 completed
+}
+
+int main() {
+    long long hostelFee = 45000;
+    applyByValue(hostelFee, 10);
+    std::cout << "after call by value   : " << hostelFee << '\n';
+    applyConcession(hostelFee, 10);
+    std::cout << "after call by reference: " << hostelFee << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 1(C) — Compare Call by Value, Reference and Pointer
+FILE NAME: Task01/Q1_three_methods.cpp
+========================================================================================
+
+#include <iostream>
+
+void applyByValue(long long fee, int percent) {
+    fee -= fee * percent / 100;
+    std::cout << "inside by-value function: " << fee << '\n';
+}
+
+void applyByReference(long long& fee, int percent) {
+    fee -= fee * percent / 100;
+}
+
+void applyByPointer(long long* fee, int percent) {
+    if (fee != nullptr) {
+        *fee -= (*fee) * percent / 100;
+    }
+}
+
+int main() {
+    long long valueFee = 45000;
+    long long referenceFee = 45000;
+    long long pointerFee = 45000;
+
+    applyByValue(valueFee, 10);
+    std::cout << "stored after call by value    : " << valueFee << '\n';
+
+    applyByReference(referenceFee, 10);
+    std::cout << "stored after call by reference: " << referenceFee << '\n';
+
+    applyByPointer(&pointerFee, 10);
+    std::cout << "stored after call by pointer  : " << pointerFee << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 1(D) — Alternative: Return the New Fee Instead of Changing It by Reference
+FILE NAME: Task01/Q1_return_value.cpp
+========================================================================================
+
+#include <iostream>
+
+long long applyConcession(long long fee, int percent) {
+    return fee - fee * percent / 100;
+}
+
+int main() {
+    long long hostelFee = 45000;
+    hostelFee = applyConcession(hostelFee, 10);
+    std::cout << "after return-value concession: " << hostelFee << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 2(A) — Return by Reference, Index and Pointer
+FILE NAME: Task02/Q2_highest_reference.cpp
+========================================================================================
+
+#include <iostream>
+
+int& highestMark(int marks[], int n) {
+    int best = 0;
+    for (int i = 1; i < n; ++i) {
+        if (marks[i] > marks[best]) {
+            best = i;
+        }
+    }
+    return marks[best];
+}
+
+// Demonstration only: do not call this function. The reference dangles after return.
+int& badReference() {
+    int local = 10;
+    return local; // compiler warning; using the returned reference is undefined behaviour
+}
+
+int highestIndex(const int marks[], int n) {
+    int best = 0;
+    for (int i = 1; i < n; ++i) {
+        if (marks[i] > marks[best]) {
+            best = i;
+        }
+    }
+    return best;
+}
+
+int* highestPointer(int marks[], int n) {
+    if (n <= 0) return nullptr;
+    int best = 0;
+    for (int i = 1; i < n; ++i) {
+        if (marks[i] > marks[best]) {
+            best = i;
+        }
+    }
+    return &marks[best];
+}
+
+int main() {
+    int marks[] = {76, 91, 84, 88, 91};
+    int n = static_cast<int>(sizeof(marks) / sizeof(marks[0]));
+
+    std::cout << "Highest before moderation: " << highestMark(marks, n) << '\n';
+    highestMark(marks, n) += 2;
+    std::cout << "Highest after moderation: " << highestMark(marks, n) << '\n';
+
+    std::cout << "Marks: ";
+    for (int i = 0; i < n; ++i) std::cout << marks[i] << ' ';
+    std::cout << '\n';
+
+    std::cout << "Highest index (0-based): " << highestIndex(marks, n) << '\n';
+    int* p = highestPointer(marks, n);
+    if (p != nullptr) std::cout << "Highest through pointer: " << *p << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 3(A) — Default Arguments and Function Overloading
+FILE NAME: Task03/Q3_overloading.cpp
+========================================================================================
+
+#include <iostream>
+
+struct Parcel {
+    double kg;
+};
+
+double charge(int grams, bool express = false, bool insured = false) {
+    double total = grams * 0.02;
+    if (express) total += 30.0;
+    if (insured) total += 10.0;
+    return total;
+}
+
+double charge(double kg, bool express = false, bool insured = false) {
+    double total = kg * 100.0;
+    if (express) total += 30.0;
+    if (insured) total += 10.0;
+    return total;
+}
+
+double charge(const Parcel& parcel, bool express = false, bool insured = false) {
+    double total = parcel.kg * 100.0;
+    if (express) total += 30.0;
+    if (insured) total += 10.0;
+    return total;
+}
+
+int main() {
+    Parcel p{2.5};
+    std::cout << "charge(2): " << charge(2) << '\n';
+    std::cout << "charge(2.0f): " << charge(2.0f) << '\n';
+    std::cout << "charge(500, true): " << charge(500, true) << '\n';
+    std::cout << "charge(1.5, false, true): " << charge(1.5, false, true) << '\n';
+    std::cout << "charge(p): " << charge(p) << '\n';
+    std::cout << "charge(p, true, true): " << charge(p, true, true) << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 3(B) — Alternative Design Using One Parcel Structure
+FILE NAME: Task03/Q3_parcel_alternative.cpp
+========================================================================================
+
+#include <iostream>
+using namespace std;
+
+enum class Unit {
+    Grams,
+    Kilograms
+};
+
+struct Parcel {
+    double weight;
+    Unit unit;
+    bool express = false;
+    bool insured = false;
+};
+
+double chargeParcel(const Parcel& p) {
+    double total;
+
+    if (p.unit == Unit::Grams)
+        total = p.weight * 0.02;
+    else
+        total = p.weight * 100;
+
+    if (p.express)
+        total += 30;
+
+    if (p.insured)
+        total += 10;
+
+    return total;
+}
+
+int main() {
+    Parcel p1{500, Unit::Grams, false, false};
+    Parcel p2{2.5, Unit::Kilograms, true, true};
+
+    cout << "Parcel 1: " << chargeParcel(p1) << '\n';
+    cout << "Parcel 2: " << chargeParcel(p2) << '\n';
+
+    return 0;
+}
+
+
+========================================================================================
+TASK 4(A) — SavingsAccount Using a Shifting Array
+FILE NAME: Task04/Q4_savings_shift.cpp
+========================================================================================
+
+#include <iostream>
+#include <string>
+
+class SavingsAccount {
+private:
+    std::string accountNumber;
+    double balance;
+    double transactions[10];
+    int count;
+
+    void record(double amount) {
+        if (count < 10) {
+            transactions[count] = amount;
+            ++count;
+        } else {
+            // Shift left to discard the oldest transaction.
+            for (int i = 1; i < 10; ++i) {
+                transactions[i - 1] = transactions[i];
+            }
+            transactions[9] = amount;
+        }
+    }
+
+public:
+    SavingsAccount(const std::string& number, double openingBalance)
+        : accountNumber(number), balance(openingBalance), count(0) {}
+
+    void deposit(double amount) {
+        if (amount <= 0) return;
+        balance += amount;
+        record(amount);
+    }
+
+    bool withdraw(double amount); // defined outside the class
+
+    void miniStatement() const {
+        std::cout << "Account: " << accountNumber << '\n';
+        std::cout << "Balance: " << balance << '\n';
+        std::cout << "Recent transactions (oldest to newest):\n";
+        for (int i = 0; i < count; ++i) {
+            std::cout << transactions[i] << '\n';
+        }
+    }
+};
+
+bool SavingsAccount::withdraw(double amount) {
+    if (amount <= 0 || balance < amount) return false;
+    balance -= amount;
+    record(-amount);
+    return true;
+}
+
+int main() {
+    SavingsAccount account("SA1001", 1000);
+    for (int i = 1; i <= 12; ++i) {
+        account.deposit(i * 10);
+    }
+    account.withdraw(50);
+    account.miniStatement();
+    return 0;
+}
+
+
+========================================================================================
+TASK 4(B) — SavingsAccount Using a Circular Array
+FILE NAME: Task04/Q4_savings_circular.cpp
+========================================================================================
+
+#include <iostream>
+#include <string>
+
+class SavingsAccount {
+private:
+    static constexpr int CAPACITY = 10;
+    std::string accountNumber;
+    double balance;
+    double transactions[CAPACITY];
+    int count;
+    int next;
+
+    void record(double amount) {
+        transactions[next] = amount;
+        next = (next + 1) % CAPACITY;
+        if (count < CAPACITY) ++count;
+    }
+
+public:
+    SavingsAccount(const std::string& number, double openingBalance)
+        : accountNumber(number), balance(openingBalance), count(0), next(0) {}
+
+    void deposit(double amount) {
+        if (amount <= 0) return;
+        balance += amount;
+        record(amount);
+    }
+
+    bool withdraw(double amount);
+
+    void miniStatement() const {
+        std::cout << "Account: " << accountNumber << '\n';
+        std::cout << "Balance: " << balance << '\n';
+        std::cout << "Recent transactions (oldest to newest):\n";
+        int start = (count == CAPACITY) ? next : 0;
+        for (int i = 0; i < count; ++i) {
+            std::cout << transactions[(start + i) % CAPACITY] << '\n';
+        }
+    }
+};
+
+bool SavingsAccount::withdraw(double amount) {
+    if (amount <= 0 || balance < amount) return false;
+    balance -= amount;
+    record(-amount);
+    return true;
+}
+
+int main() {
+    SavingsAccount account("SA1001", 1000);
+    for (int i = 1; i <= 12; ++i) account.deposit(i * 10);
+    account.withdraw(50);
+    account.miniStatement();
+    return 0;
+}
+
+
+========================================================================================
+TASK 5(A) — Predict the Output of Token
+FILE NAME: Task05/Q5_token_predict.cpp
+========================================================================================
+
+#include <iostream>
+
+class Token {
+    static int next;
+    int id;
+public:
+    Token() { id = ++next; }
+    int get() const { return id; }
+    static int issued() { return next - 100; }
+};
+
+int Token::next = 100;
+
+int main() {
+    Token counter[3];
+    Token extra;
+    std::cout << counter[0].get() << ' ' << counter[2].get() << ' '
+              << extra.get() << ' ' << Token::issued() << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 5(B) — BusTicket Class and Static Members
+FILE NAME: Task05/Q5_bus_ticket.cpp
+========================================================================================
+
+#include <iostream>
+#include <string>
+
+class BusTicket {
+    static int issued;
+    static const int CAPACITY = 3;
+    int seat;
+    std::string name;
+
+public:
+    explicit BusTicket(const std::string& n) : seat(0), name(n) {
+        if (issued < CAPACITY) {
+            seat = ++issued; // TODO 1 completed
+        }
+    }
+
+    static int count() {
+        return issued; // TODO 2 completed
+    }
+
+    void print() const {
+        std::cout << name << ": "
+                  << (seat ? "Seat " + std::to_string(seat) : std::string("Waiting"))
+                  << '\n';
+    }
+};
+
+int BusTicket::issued = 0;
+
+int main() {
+    BusTicket trip[4] = {BusTicket("Asha"), BusTicket("Bala"),
+                         BusTicket("Chitra"), BusTicket("Dev")};
+    for (const BusTicket& t : trip) t.print();
+    std::cout << "Issued: " << BusTicket::count() << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 5(C) — Create Tickets in a Function Called Twice
+FILE NAME: Task05/Q5_bus_twice.cpp
+========================================================================================
+
+#include <iostream>
+#include <string>
+
+class BusTicket {
+    static int issued;
+    static const int CAPACITY = 3;
+    int seat;
+    std::string name;
+public:
+    explicit BusTicket(const std::string& n) : seat(0), name(n) {
+        if (issued < CAPACITY) seat = ++issued;
+    }
+    static int count() { return issued; }
+    void print() const {
+        std::cout << name << ": "
+                  << (seat ? "Seat " + std::to_string(seat) : std::string("Waiting"))
+                  << '\n';
+    }
+};
+int BusTicket::issued = 0;
+
+void issueTrip(const std::string& tripName) {
+    std::cout << tripName << " trip\n";
+    BusTicket trip[4] = {BusTicket("Asha"), BusTicket("Bala"),
+                         BusTicket("Chitra"), BusTicket("Dev")};
+    for (const BusTicket& ticket : trip) ticket.print();
+}
+
+int main() {
+    issueTrip("Morning");
+    issueTrip("Afternoon");
+    std::cout << "Total issued: " << BusTicket::count() << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 6(A) — Friend Functions for Time
+FILE NAME: Task06/Q6_complete_TODO.cpp
+========================================================================================
+
+#include <iostream>
+
+class Time {
+    int h, m;
+
+public:
+    Time(int hh, int mm) : h(hh), m(mm) {}
+    friend int minutesBetween(const Time& a, const Time& b);
+    friend bool earlier(const Time& a, const Time& b);
+};
+
+int minutesBetween(const Time& a, const Time& b) {
+    int first = a.h * 60 + a.m;
+    int second = b.h * 60 + b.m;
+    int difference = first - second;
+    return difference < 0 ? -difference : difference; // TODO 1 completed
+}
+
+bool earlier(const Time& a, const Time& b) {
+    return a.h < b.h || (a.h == b.h && a.m < b.m); // TODO 2 completed
+}
+
+int main() {
+    Time departure(9, 45), arrival(13, 10);
+    std::cout << minutesBetween(departure, arrival) << ' '
+              << std::boolalpha << earlier(arrival, departure) << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 6(B) — Additional Time Test Cases
+FILE NAME: Task06/Q6_friend_time.cpp
+========================================================================================
+
+#include <iostream>
+
+class Time {
+    int h, m;
+public:
+    Time(int hh, int mm) : h(hh), m(mm) {}
+    friend int minutesBetween(const Time& a, const Time& b);
+    friend bool earlier(const Time& a, const Time& b);
+};
+
+int minutesBetween(const Time& a, const Time& b) {
+    int first = a.h * 60 + a.m;
+    int second = b.h * 60 + b.m;
+    int difference = first - second;
+    return difference < 0 ? -difference : difference; // TODO 1 completed
+}
+
+bool earlier(const Time& a, const Time& b) {
+    return a.h < b.h || (a.h == b.h && a.m < b.m); // TODO 2 completed
+}
+
+int main() {
+    Time departure(9, 45), arrival(13, 10);
+    std::cout << minutesBetween(departure, arrival) << ' '
+              << std::boolalpha << earlier(arrival, departure) << '\n';
+
+    Time beforeNoon(11, 59), afterNoon(12, 1);
+    std::cout << minutesBetween(beforeNoon, afterNoon) << ' '
+              << earlier(beforeNoon, afterNoon) << '\n';
+
+    Time sameA(12, 0), sameB(12, 0);
+    std::cout << minutesBetween(sameA, sameB) << ' '
+              << earlier(sameA, sameB) << '\n';
+    return 0;
+}
+
+
+========================================================================================
+TASK 6(C) — Inline and No-Inline Benchmark
+FILE NAME: Task06/Q6_inline_benchmark.cpp
+========================================================================================
+
+#include <chrono>
+#include <iostream>
+
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+int minutesBetweenNoInline(int h1, int m1, int h2, int m2) {
+    int first = h1 * 60 + m1;
+    int second = h2 * 60 + m2;
+    int difference = first - second;
+    return difference < 0 ? -difference : difference;
+}
+
+inline int minutesBetweenInline(int h1, int m1, int h2, int m2) {
+    int first = h1 * 60 + m1;
+    int second = h2 * 60 + m2;
+    int difference = first - second;
+    return difference < 0 ? -difference : difference;
+}
+
+volatile long long resultSink = 0;
+
+long long benchNoInline() {
+    long long total = 0;
+    const int N = 10000000;
+    auto start = std::chrono::steady_clock::now();
+    for (int i = 0; i < N; ++i) {
+        total += minutesBetweenNoInline(i % 24, (i * 7) % 60,
+                                        (i * 13) % 24, (i * 17) % 60);
+    }
+    auto end = std::chrono::steady_clock::now();
+    resultSink = total;
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+}
+
+long long benchInline() {
+    long long total = 0;
+    const int N = 10000000;
+    auto start = std::chrono::steady_clock::now();
+    for (int i = 0; i < N; ++i) {
+        total += minutesBetweenInline(i % 24, (i * 7) % 60,
+                                      (i * 13) % 24, (i * 17) % 60);
+    }
+    auto end = std::chrono::steady_clock::now();
+    resultSink = total;
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+}
+
+int main() {
+    std::cout << "Calls per test: 10000000\n";
+    std::cout << "No-inline time (ms): " << benchNoInline() << '\n';
+    std::cout << "Inline time (ms): " << benchInline() << '\n';
+    std::cout << "Keep sink: " << resultSink << '\n';
+}
+
+
+========================================================================================
+TASK 7(A) — Shifting vs Circular Buffer Benchmark
+FILE NAME: Task07/Q7_circular_benchmark.cpp
+========================================================================================
+
+#include <chrono>
+#include <iostream>
+
+template <int CAPACITY>
+class ShiftHistory {
+    int values[CAPACITY]{};
+    int count = 0;
+public:
+    void add(int value) {
+        if (count < CAPACITY) {
+            values[count++] = value;
+        } else {
+            for (int i = 1; i < CAPACITY; ++i) values[i - 1] = values[i];
+            values[CAPACITY - 1] = value;
+        }
+    }
+    int at(int i) const { return values[i]; }
+    int size() const { return count; }
+};
+
+template <int CAPACITY>
+class CircularHistory {
+    int values[CAPACITY]{};
+    int count = 0;
+    int next = 0;
+public:
+    void add(int value) {
+        values[next] = value;
+        next = (next + 1) % CAPACITY;
+        if (count < CAPACITY) ++count;
+    }
+    int size() const { return count; }
+    int at(int i) const {
+        int start = count == CAPACITY ? next : 0;
+        return values[(start + i) % CAPACITY];
+    }
+};
+
+volatile long long checksumSink = 0;
+
+template <int CAPACITY>
+void testCapacity(long long operations) {
+    ShiftHistory<CAPACITY> shifted;
+    CircularHistory<CAPACITY> circular;
+
+    auto startShift = std::chrono::steady_clock::now();
+    for (long long i = 0; i < operations; ++i) shifted.add(static_cast<int>(i % 100000));
+    auto endShift = std::chrono::steady_clock::now();
+
+    auto startCircular = std::chrono::steady_clock::now();
+    for (long long i = 0; i < operations; ++i) circular.add(static_cast<int>(i % 100000));
+    auto endCircular = std::chrono::steady_clock::now();
+
+    bool same = shifted.size() == circular.size();
+    long long checksum = 0;
+    for (int i = 0; i < shifted.size(); ++i) {
+        if (shifted.at(i) != circular.at(i)) same = false;
+        checksum += shifted.at(i) + circular.at(i);
+    }
+    checksumSink = checksum;
+
+    auto shiftMs = std::chrono::duration_cast<std::chrono::milliseconds>(endShift - startShift).count();
+    auto ringMs = std::chrono::duration_cast<std::chrono::milliseconds>(endCircular - startCircular).count();
+    std::cout << "Capacity " << CAPACITY << ", operations " << operations << '\n';
+    std::cout << "Shifting time (ms): " << shiftMs << '\n';
+    std::cout << "Circular time (ms): " << ringMs << '\n';
+    std::cout << "Last values match: " << (same ? "yes" : "no") << '\n';
+    std::cout << "Final values: ";
+    for (int i = 0; i < shifted.size(); ++i) std::cout << shifted.at(i) << (i + 1 == shifted.size() ? '\n' : ' ');
+}
+
+int main() {
+    const long long operations = 1000000;
+    testCapacity<10>(operations);
+    testCapacity<50>(operations);
+}
