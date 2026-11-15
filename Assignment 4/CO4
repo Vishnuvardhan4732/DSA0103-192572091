@@ -1,1 +1,662 @@
 
+/* =========================================================
+   TASK 1: CLASS DESIGN REVIEW
+   File: Task1.cpp
+   ========================================================= */
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+#include <iomanip>
+using namespace std;
+
+constexpr double DA_RATE = 0.42;
+
+class Staff {
+    string name;
+    int id;
+
+public:
+    Staff(const string& n, int i) : name(n), id(i) {}
+    virtual double pay() const = 0;
+    virtual ~Staff() = default;
+};
+
+class Professor : public Staff {
+    double basic, research;
+
+public:
+    Professor(const string& n, int i, double b, double r)
+        : Staff(n, i), basic(b), research(r) {}
+
+    double pay() const override {
+        return basic + basic * DA_RATE + research;
+    }
+};
+
+class LabAssistant : public Staff {
+    double basic;
+
+public:
+    LabAssistant(const string& n, int i, double b)
+        : Staff(n, i), basic(b) {}
+
+    double pay() const override {
+        return basic + basic * DA_RATE;
+    }
+};
+
+class GuestFaculty : public Staff {
+    double hours, ratePerHour;
+
+public:
+    GuestFaculty(const string& n, int i, double h, double r)
+        : Staff(n, i), hours(h), ratePerHour(r) {}
+
+    double pay() const override {
+        return hours * ratePerHour;
+    }
+};
+
+int main() {
+    vector<unique_ptr<Staff>> staff;
+
+    staff.push_back(make_unique<Professor>("Anita", 101, 50000, 5000));
+    staff.push_back(make_unique<LabAssistant>("Ravi", 102, 25000));
+    staff.push_back(make_unique<GuestFaculty>("Meena", 103, 20, 800));
+
+    cout << fixed << setprecision(2);
+
+    for (const auto& person : staff)
+        cout << person->pay() << '\n';
+
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 2: FROM REQUIREMENT TO HIERARCHY
+   File: Task2.cpp
+   ========================================================= */
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person {
+protected:
+    string name;
+    int id;
+    string phone;
+
+public:
+    Person(string n, int i, string p)
+        : name(n), id(i), phone(p) {}
+};
+
+class Student : virtual public Person {
+protected:
+    string programme;
+    double cgpa;
+
+public:
+    Student(string n, int i, string p, string pr, double c)
+        : Person(n, i, p), programme(pr), cgpa(c) {}
+};
+
+class Staff : virtual public Person {
+protected:
+    string department;
+    double salary;
+
+public:
+    Staff(string n, int i, string p, string d, double s)
+        : Person(n, i, p), department(d), salary(s) {}
+};
+
+class TeachingAssistant : public Student, public Staff {
+public:
+    TeachingAssistant(string n, int i, string p,
+                      string pr, double c, string d, double s)
+        : Person(n, i, p),
+          Student(n, i, p, pr, c),
+          Staff(n, i, p, d, s) {}
+
+    void print() const {
+        cout << name << " " << id << " "
+             << programme << " " << department << '\n';
+    }
+};
+
+class ResearchScholar : public Student {
+    double fellowship;
+
+public:
+    ResearchScholar(string n, int i, string p,
+                    string pr, double c, double f)
+        : Person(n, i, p),
+          Student(n, i, p, pr, c), fellowship(f) {}
+
+    void print() const {
+        cout << name << " " << programme
+             << " " << fellowship << '\n';
+    }
+};
+
+int main() {
+    TeachingAssistant ta("Kavya", 10, "9000000000",
+                         "CSE", 8.7, "Computer Science", 30000);
+
+    ResearchScholar rs("Arun", 11, "9111111111",
+                       "CSE", 9.1, 15000);
+
+    ta.print();
+    rs.print();
+
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 3A: CONSTRUCTORS AND MEMBER CLASSES
+   File: Task3A.cpp
+   ========================================================= */
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Address {
+    string city;
+
+public:
+    Address(string c) : city(c) {
+        cout << "Address+ ";
+    }
+
+    ~Address() {
+        cout << "Address- ";
+    }
+};
+
+class Course {
+    string title;
+
+public:
+    Course(string t) : title(t) {
+        cout << "Course+ ";
+    }
+
+    ~Course() {
+        cout << "Course- ";
+    }
+};
+
+class Person {
+protected:
+    string name;
+
+public:
+    Person(string n) : name(n) {
+        cout << "Person+ ";
+    }
+
+    virtual ~Person() {
+        cout << "Person- ";
+    }
+};
+
+class Student : virtual public Person {
+    Address address;
+    Course course;
+
+public:
+    Student(string n, string city, string c)
+        : Person(n), address(city), course(c) {
+        cout << "Student+ ";
+    }
+
+    ~Student() override {
+        cout << "Student- ";
+    }
+};
+
+class Staff : virtual public Person {
+public:
+    Staff(string n) : Person(n) {
+        cout << "Staff+ ";
+    }
+
+    ~Staff() override {
+        cout << "Staff- ";
+    }
+};
+
+class TeachingAssistant : public Student, public Staff {
+public:
+    TeachingAssistant(string n)
+        : Person(n), Student(n, "Salem", "C++"), Staff(n) {
+        cout << "TA+ ";
+    }
+
+    ~TeachingAssistant() override {
+        cout << "TA- ";
+    }
+};
+
+int main() {
+    cout << "Student: ";
+    {
+        Student s("Kavya", "Salem", "C++");
+    }
+
+    cout << "\nStaff: ";
+    {
+        Staff st("Ravi");
+    }
+
+    cout << "\nTeachingAssistant: ";
+    {
+        TeachingAssistant ta("Arun");
+    }
+
+    cout << '\n';
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 3B: ADDRESS MEMBER TODO
+   File: Task3B.cpp
+   ========================================================= */
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person {
+protected:
+    string name;
+    int age;
+
+public:
+    Person(const string& n, int a) : name(n), age(a) {}
+};
+
+class Address {
+    string city;
+    int pin;
+
+public:
+    Address(const string& c, int p) : city(c), pin(p) {}
+
+    string str() const {
+        return city + "-" + to_string(pin);
+    }
+};
+
+class Student : public Person {
+    long long regNo;
+    Address home;
+
+public:
+    Student(const string& n, int a, long long r,
+            const string& city, int pin)
+        : Person(n, a), regNo(r), home(city, pin) {}
+
+    void print() const {
+        cout << regNo << ' ' << name << " (" << age
+             << ") " << home.str() << '\n';
+    }
+};
+
+int main() {
+    Student s("Kavya", 19, 192311001, "Salem", 636001);
+    s.print();
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 4: POINTERS TO DERIVED CLASSES - FORENSICS
+   File: Task4.cpp
+   ========================================================= */
+
+#include <iostream>
+#include <memory>
+#include <vector>
+using namespace std;
+
+class Account {
+public:
+    virtual double rate() const {
+        return 3.5;
+    }
+
+    virtual ~Account() {
+        cout << "Account destroyed\n";
+    }
+};
+
+class SeniorAccount : public Account {
+    double* history;
+
+public:
+    SeniorAccount() : history(new double[100]{}) {}
+
+    double rate() const override {
+        return 4.0;
+    }
+
+    ~SeniorAccount() override {
+        delete[] history;
+        cout << "SeniorAccount destroyed; history released\n";
+    }
+};
+
+int main() {
+    vector<unique_ptr<Account>> accounts;
+
+    accounts.push_back(make_unique<Account>());
+    accounts.push_back(make_unique<SeniorAccount>());
+
+    for (const auto& a : accounts)
+        cout << a->rate() << '\n';
+
+    Account baseCopy = SeniorAccount();
+
+    cout << "Sliced base rate: "
+         << baseCopy.rate() << '\n';
+
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 5A: POINTERS TO OBJECTS AND THIS POINTER
+   File: Task5A.cpp
+   ========================================================= */
+
+#include <iomanip>
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Cart {
+    string items[10];
+    double prices[10];
+    int n = 0;
+    double discount = 0;
+
+public:
+    Cart& add(const string& item, double price) {
+        if (n < 10) {
+            items[n] = item;
+            prices[n] = price;
+            ++n;
+        }
+
+        return *this;
+    }
+
+    Cart& setDiscount(double discount) {
+        this->discount = discount;
+        return *this;
+    }
+
+    double total() const {
+        double t = 0;
+
+        for (int i = 0; i < n; i++)
+            t += prices[i];
+
+        return t * (100 - discount) / 100;
+    }
+};
+
+int main() {
+    Cart direct;
+
+    direct.add("Rice", 60);
+
+    Cart* pointer = &direct;
+    pointer->add("Dal", 120);
+
+    Cart& reference = direct;
+    reference.add("Oil", 180);
+
+    Cart* dynamicCart = new Cart;
+    dynamicCart->add("Milk", 50);
+
+    cout << fixed << setprecision(2);
+    cout << direct.total() << '\n';
+    cout << dynamicCart->total() << '\n';
+
+    delete dynamicCart;
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 5B: ARRAY OF OBJECT POINTERS
+   File: Task5B.cpp
+   ========================================================= */
+
+#include <iostream>
+using namespace std;
+
+class Cart {
+    double amount;
+
+public:
+    explicit Cart(double a) : amount(a) {}
+
+    double total() const {
+        return amount;
+    }
+};
+
+int main() {
+    Cart c1(250), c2(480), c3(325);
+
+    Cart* carts[3] = { &c1, &c2, &c3 };
+
+    int best = 0;
+
+    for (int i = 1; i < 3; i++) {
+        if (carts[i]->total() > carts[best]->total())
+            best = i;
+    }
+
+    cout << "Highest cart total: "
+         << carts[best]->total()
+         << " at index " << best << '\n';
+
+    return 0;
+}
+
+
+/* =========================================================
+   TASK 6: VEHICLE RENTAL FLEET
+   File: Task6.cpp
+   ========================================================= */
+
+#include <iostream>
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Vehicle {
+protected:
+    string registration;
+    double dailyRate;
+    bool rented = false;
+
+public:
+    Vehicle(string reg, double rate)
+        : registration(reg), dailyRate(rate) {}
+
+    virtual double charge(int days) const = 0;
+
+    virtual void display() const {
+        cout << registration << " rate/day=" << dailyRate;
+    }
+
+    bool rent() {
+        if (rented)
+            return false;
+
+        rented = true;
+        return true;
+    }
+
+    double returnVehicle(int days, int lateDays,
+                         double lateFeePerDay) {
+        if (!rented || days < 1 || lateDays < 0)
+            return -1.0;
+
+        rented = false;
+        return charge(days) + lateDays * lateFeePerDay;
+    }
+
+    virtual ~Vehicle() = default;
+};
+
+class MotorVehicle : public Vehicle {
+protected:
+    double energyLevel;
+    string serviceDue;
+
+public:
+    MotorVehicle(string reg, double rate,
+                 double energy, string due)
+        : Vehicle(reg, rate),
+          energyLevel(energy), serviceDue(due) {}
+
+    void display() const override {
+        Vehicle::display();
+        cout << " energy=" << energyLevel
+             << " serviceDue=" << serviceDue;
+    }
+};
+
+class Bicycle : public Vehicle {
+public:
+    Bicycle(string reg, double rate)
+        : Vehicle(reg, rate) {}
+
+    double charge(int days) const override {
+        return dailyRate * days;
+    }
+};
+
+class TwoWheeler : public MotorVehicle {
+public:
+    TwoWheeler(string reg, double rate,
+               double fuel, string due)
+        : MotorVehicle(reg, rate, fuel, due) {}
+
+    double charge(int days) const override {
+        return dailyRate * days + 20.0;
+    }
+};
+
+class Car : public MotorVehicle {
+    int seats;
+
+public:
+    Car(string reg, double rate, double fuel,
+        string due, int s)
+        : MotorVehicle(reg, rate, fuel, due), seats(s) {}
+
+    double charge(int days) const override {
+        return dailyRate * days + seats * 10.0;
+    }
+};
+
+class ElectricVehicle : public MotorVehicle {
+protected:
+    double batteryCapacity;
+    double kWhUsed;
+
+public:
+    ElectricVehicle(string reg, double rate, double level,
+                    string due, double capacity, double used)
+        : MotorVehicle(reg, rate, level, due),
+          batteryCapacity(capacity), kWhUsed(used) {}
+
+    void display() const override {
+        MotorVehicle::display();
+        cout << " batteryKWh=" << batteryCapacity;
+    }
+};
+
+class ElectricCar : public ElectricVehicle {
+    int seats;
+    double pricePerKWh;
+
+public:
+    ElectricCar(string reg, double rate, double level,
+                string due, double capacity, double used,
+                int s, double price)
+        : ElectricVehicle(reg, rate, level, due, capacity, used),
+          seats(s), pricePerKWh(price) {}
+
+    double charge(int days) const override {
+        return dailyRate * days + kWhUsed * pricePerKWh
+               + seats * 10.0;
+    }
+};
+
+class ElectricBus : public ElectricVehicle {
+    int seats;
+    double pricePerKWh;
+
+public:
+    ElectricBus(string reg, double rate, double level,
+                string due, double capacity, double used,
+                int s, double price)
+        : ElectricVehicle(reg, rate, level, due, capacity, used),
+          seats(s), pricePerKWh(price) {}
+
+    double charge(int days) const override {
+        return dailyRate * days + kWhUsed * pricePerKWh
+               + seats * 5.0;
+    }
+};
+
+int main() {
+    vector<unique_ptr<Vehicle>> fleet;
+
+    fleet.push_back(make_unique<Bicycle>("BIKE01", 100));
+
+    fleet.push_back(make_unique<TwoWheeler>(
+        "TW02", 250, 80, "2026-12-01"));
+
+    fleet.push_back(make_unique<Car>(
+        "CAR03", 1200, 70, "2026-12-10", 5));
+
+    fleet.push_back(make_unique<ElectricCar>(
+        "EV04", 1500, 90, "2026-12-15", 60, 18, 5, 8));
+
+    fleet.push_back(make_unique<ElectricBus>(
+        "EB05", 3000, 85, "2026-12-20", 180, 50, 30, 7));
+
+    cout << fixed << setprecision(2);
+
+    for (const auto& v : fleet) {
+        v->display();
+        cout << '\n';
+
+        if (v->rent()) {
+            double bill = v->returnVehicle(2, 1, 100);
+            cout << "Rental bill: " << bill << '\n';
+        }
+    }
+
+    return 0;
+}
+
