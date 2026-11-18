@@ -1,0 +1,921 @@
+=========================================A1 – Polymorphic Bill Hierarchy===========================================
+
+#include <iostream>
+
+using namespace std;
+
+ 
+
+class Bill {
+
+public:
+
+    virtual double calculateBill() = 0;
+
+    virtual ~Bill() {}
+
+};
+
+ 
+
+class OutPatient : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 500 + 1200;
+
+    }
+
+};
+
+ 
+
+class InPatient : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 25000 + 15000 + 7500;
+
+    }
+
+};
+
+ 
+
+class DayCareBill : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 12000 + 6000;
+
+    }
+
+};
+
+ 
+
+class EmergencyBill : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 5000;
+
+    }
+
+};
+
+ 
+
+int main() {
+
+    OutPatient op;
+
+    InPatient ip;
+
+    DayCareBill dc;
+
+    EmergencyBill em;
+
+ 
+
+    cout << "Out Patient Bill: " << op.calculateBill() << endl;
+
+    cout << "In Patient Bill: " << ip.calculateBill() << endl;
+
+    cout << "Day Care Bill: " << dc.calculateBill() << endl;
+
+    cout << "Emergency Bill: " << em.calculateBill() << endl;
+
+ 
+
+    return 0;
+
+}
+
+===================================A2 – Runtime Binding and Virtual Destructors====================================
+
+#include <iostream>
+
+using namespace std;
+
+ 
+
+class Base {
+
+public:
+
+    virtual void display() {
+
+        cout << "Base class function" << endl;
+
+    }
+
+ 
+
+    virtual ~Base() {
+
+        cout << "Base destructor called" << endl;
+
+    }
+
+};
+
+ 
+
+class Derived : public Base {
+
+public:
+
+    void display() override {
+
+        cout << "Derived class function" << endl;
+
+    }
+
+ 
+
+    ~Derived() {
+
+        cout << "Derived destructor called" << endl;
+
+    }
+
+};
+
+ 
+
+int main() {
+
+    Base* ptr = new Derived();
+
+ 
+
+    ptr->display();
+
+ 
+
+    delete ptr;
+
+ 
+
+    return 0;
+
+}
+
+=============================A3 – Abstract Payer Classes============================================================
+
+#include <iostream>
+
+using namespace std;
+
+ 
+
+class Payer {
+
+public:
+
+    virtual void pay(double amount) = 0;
+
+    virtual ~Payer() {}
+
+};
+
+ 
+
+class SelfPay : public Payer {
+
+public:
+
+    void pay(double amount) override {
+
+        cout << "Self payment: Rs. " << amount << endl;
+
+    }
+
+};
+
+ 
+
+class Insurance : public Payer {
+
+public:
+
+    void pay(double amount) override {
+
+        cout << "Insurance payment: Rs. " << amount * 0.8 << endl;
+
+    }
+
+};
+
+ 
+
+class CorporateTieUp : public Payer {
+
+public:
+
+    void pay(double amount) override {
+
+        cout << "Corporate payment: Rs. " << amount * 0.9 << endl;
+
+    }
+
+};
+
+ 
+
+int main() {
+
+    SelfPay s;
+
+    Insurance i;
+
+    CorporateTieUp c;
+
+ 
+
+    s.pay(10000);
+
+    i.pay(10000);
+
+    c.pay(10000);
+
+ 
+
+    return 0;
+
+}
+
+===============================A4 – Exception Handling Strategy=================================================
+
+#include <iostream>
+
+#include <stdexcept>
+
+using namespace std;
+
+ 
+
+class BillingError : public runtime_error {
+
+public:
+
+    BillingError(string message) : runtime_error(message) {}
+
+};
+
+ 
+
+class ClaimError : public BillingError {
+
+public:
+
+    ClaimError(string message) : BillingError(message) {}
+
+};
+
+ 
+
+class UnknownPackageError : public BillingError {
+
+public:
+
+    UnknownPackageError(string message) : BillingError(message) {}
+
+};
+
+ 
+
+void validateBill(double amount) {
+
+    if (amount <= 0) {
+
+        throw BillingError("Invalid billing amount");
+
+    }
+
+ 
+
+    cout << "Valid billing amount: Rs. " << amount << endl;
+
+}
+
+ 
+
+void validateClaim(bool approved) {
+
+    if (!approved) {
+
+        throw ClaimError("Insurance claim rejected");
+
+    }
+
+ 
+
+    cout << "Insurance claim approved" << endl;
+
+}
+
+ 
+
+void validatePackage(int packageCode) {
+
+    if (packageCode < 1 || packageCode > 5) {
+
+        throw UnknownPackageError("Unknown package selected");
+
+    }
+
+ 
+
+    cout << "Valid package selected" << endl;
+
+}
+
+ 
+
+int main() {
+
+    try {
+
+        validateBill(5000);
+
+        validateClaim(false);
+
+        validatePackage(2);
+
+    }
+
+    catch (const ClaimError& e) {
+
+        cout << "Claim Error: " << e.what() << endl;
+
+    }
+
+    catch (const UnknownPackageError& e) {
+
+        cout << "Package Error: " << e.what() << endl;
+
+    }
+
+    catch (const BillingError& e) {
+
+        cout << "Billing Error: " << e.what() << endl;
+
+    }
+
+ 
+
+    return 0;
+
+}
+
+===========================================A5 – Recovery, Rethrowing and RAII================================
+
+#include <iostream>
+
+#include <stdexcept>
+
+using namespace std;
+
+ 
+
+class Resource {
+
+public:
+
+    Resource() {
+
+        cout << "Resource acquired" << endl;
+
+    }
+
+ 
+
+    ~Resource() {
+
+        cout << "Resource released" << endl;
+
+    }
+
+};
+
+ 
+
+void processBilling() {
+
+    Resource r;
+
+ 
+
+    try {
+
+        cout << "Processing billing..." << endl;
+
+        throw runtime_error("Billing processing failed");
+
+    }
+
+    catch (const exception& e) {
+
+        cout << "Error caught: " << e.what() << endl;
+
+        throw;
+
+    }
+
+}
+
+ 
+
+int main() {
+
+    try {
+
+        processBilling();
+
+    }
+
+    catch (const exception& e) {
+
+        cout << "Main function handled error: " << e.what() << endl;
+
+    }
+
+ 
+
+    cout << "Program completed" << endl;
+
+ 
+
+    return 0;
+
+}
+
+=====================================B1 – Polymorphic Billing Implementation================================
+
+#include <iostream>
+
+#include <vector>
+
+#include <memory>
+
+using namespace std;
+
+ 
+
+class Bill {
+
+public:
+
+    virtual double calculateBill() = 0;
+
+    virtual ~Bill() {}
+
+};
+
+ 
+
+class OutPatient : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 1700;
+
+    }
+
+};
+
+ 
+
+class InPatient : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 47500;
+
+    }
+
+};
+
+ 
+
+class DayCareBill : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 18000;
+
+    }
+
+};
+
+ 
+
+class EmergencyBill : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 5000;
+
+    }
+
+};
+
+ 
+
+int main() {
+
+    vector<unique_ptr<Bill>> bills;
+
+ 
+
+    bills.push_back(make_unique<OutPatient>());
+
+    bills.push_back(make_unique<InPatient>());
+
+    bills.push_back(make_unique<DayCareBill>());
+
+    bills.push_back(make_unique<EmergencyBill>());
+
+ 
+
+    double total = 0;
+
+ 
+
+    for (const auto& bill : bills) {
+
+        double amount = bill->calculateBill();
+
+        cout << "Bill Amount: Rs. " << amount << endl;
+
+        total += amount;
+
+    }
+
+ 
+
+    cout << "Grand Total: Rs. " << total << endl;
+
+ 
+
+    return 0;
+
+}
+
+============================================B2 – Error Conditions and Claim Exceptions==========================================
+
+#include <iostream>
+
+#include <stdexcept>
+
+using namespace std;
+
+ 
+
+class ClaimException : public runtime_error {
+
+public:
+
+    ClaimException(string message) : runtime_error(message) {}
+
+};
+
+ 
+
+void processClaim(double amount, bool approved) {
+
+    try {
+
+        if (amount <= 0) {
+
+            throw invalid_argument("Invalid claim amount");
+
+        }
+
+ 
+
+        if (!approved) {
+
+            throw ClaimException("Insurance claim rejected");
+
+        }
+
+ 
+
+        cout << "Claim processed successfully" << endl;
+
+    }
+
+    catch (const ClaimException& e) {
+
+        cout << "Claim Error: " << e.what() << endl;
+
+        throw;
+
+    }
+
+}
+
+ 
+
+int main() {
+
+    try {
+
+        processClaim(15000, false);
+
+    }
+
+    catch (const exception& e) {
+
+        cout << "Main Error Handler: " << e.what() << endl;
+
+    }
+
+ 
+
+    return 0;
+
+}
+
+==================================B3 – Performance Comparison===============================================
+
+#include <iostream>
+
+#include <vector>
+
+#include <chrono>
+
+using namespace std;
+
+using namespace chrono;
+
+ 
+
+class Bill {
+
+public:
+
+    virtual double calculate() = 0;
+
+    virtual ~Bill() {}
+
+};
+
+ 
+
+class OutPatient : public Bill {
+
+public:
+
+    double calculate() override {
+
+        return 1700;
+
+    }
+
+};
+
+ 
+
+class InPatient : public Bill {
+
+public:
+
+    double calculate() override {
+
+        return 47500;
+
+    }
+
+};
+
+ 
+
+int main() {
+
+    const int N = 1000000;
+
+ 
+
+    vector<Bill*> bills;
+
+    OutPatient op;
+
+    InPatient ip;
+
+ 
+
+    for (int i = 0; i < N; i++) {
+
+        if (i % 2 == 0)
+
+            bills.push_back(&op);
+
+        else
+
+            bills.push_back(&ip);
+
+    }
+
+ 
+
+    auto start = high_resolution_clock::now();
+
+ 
+
+    double total = 0;
+
+ 
+
+    for (Bill* b : bills) {
+
+        total += b->calculate();
+
+    }
+
+ 
+
+    auto stop = high_resolution_clock::now();
+
+ 
+
+    auto duration = duration_cast<microseconds>(stop - start);
+
+ 
+
+    cout << "Polymorphic Billing Total: Rs. " << total << endl;
+
+    cout << "Execution Time: " << duration.count()
+
+         << " microseconds" << endl;
+
+ 
+
+    return 0;
+
+}
+
+=============================================B4 – Final Engineering Decision=========================================
+
+#include <iostream>
+
+#include <vector>
+
+#include <memory>
+
+using namespace std;
+
+ 
+
+class Payer {
+
+public:
+
+    virtual double calculatePayment(double amount) = 0;
+
+    virtual ~Payer() {}
+
+};
+
+ 
+
+class SelfPay : public Payer {
+
+public:
+
+    double calculatePayment(double amount) override {
+
+        return amount;
+
+    }
+
+};
+
+ 
+
+class CorporatePayer : public Payer {
+
+public:
+
+    double calculatePayment(double amount) override {
+
+        return amount * 0.9;
+
+    }
+
+};
+
+ 
+
+class Bill {
+
+public:
+
+    virtual double calculateBill() = 0;
+
+    virtual ~Bill() {}
+
+};
+
+ 
+
+class OutPatient : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 2000;
+
+    }
+
+};
+
+ 
+
+class MaternityBill : public Bill {
+
+public:
+
+    double calculateBill() override {
+
+        return 50000;
+
+    }
+
+};
+
+ 
+
+int main() {
+
+    vector<unique_ptr<Bill>> bills;
+
+ 
+
+    bills.push_back(make_unique<OutPatient>());
+
+    bills.push_back(make_unique<MaternityBill>());
+
+ 
+
+    SelfPay self;
+
+    CorporatePayer corporate;
+
+ 
+
+    double total = 0;
+
+ 
+
+    for (const auto& bill : bills) {
+
+        double amount = bill->calculateBill();
+
+ 
+
+        cout << "Original Bill: Rs. " << amount << endl;
+
+ 
+
+        double payment = corporate.calculatePayment(amount);
+
+ 
+
+        cout << "Corporate Payment: Rs. " << payment << endl;
+
+ 
+
+        total += payment;
+
+    }
+
+ 
+
+    cout << "Final Total Payment: Rs. " << total << endl;
+
+ 
+
+    return 0;
+
+}
